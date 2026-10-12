@@ -14,6 +14,7 @@ def generate_pdf_report(
 ) -> bytes:
     """
     Generates a formal MoFPI-aligned Packaging Recommendation Dossier in PDF format.
+    Supports standard and user-defined custom commodities, along with Veg / Non-Veg categorization.
     """
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -67,20 +68,34 @@ def generate_pdf_report(
     story = []
 
     # Header / Title
-    story.append(Paragraph("MINISTRY OF FOOD PROCESSING INDUSTRIES (MoFPI)", bold_style))
+    story.append(Paragraph("MINISTRY OF FOOD PROCESSING INDUSTRIES (MoFPI) | GOVT OF INDIA", bold_style))
     story.append(Paragraph("AI-Based Intelligent Food Packaging Recommendation Dossier", title_style))
     story.append(Paragraph("Smart Packaging & Freshness Assurance Protocol | Challenge SIH26236", subtitle_style))
     story.append(Spacer(1, 8))
 
+    # Determine Veg / Non-Veg label
+    food_type_val = commodity.get("food_type", "veg").lower()
+    if food_type_val == "non_veg" or "non" in food_type_val:
+        food_type_badge = "<font color='#b91c1c'><b>🔴 NON-VEGETARIAN (FSSAI Brown Category)</b></font>"
+    else:
+        food_type_badge = "<font color='#15803d'><b>🟢 VEGETARIAN (FSSAI Green Category)</b></font>"
+
+    spoilage = commodity.get("spoilage_factors", ["Standard microbial and oxidation spoilage"])
+    if isinstance(spoilage, list):
+        spoilage_str = ", ".join(spoilage)
+    else:
+        spoilage_str = str(spoilage)
+
     # Section 1: Commodity Profile Table
     story.append(Paragraph("1. Target Food Commodity Specification", heading2_style))
     comm_data = [
-        [Paragraph("Commodity Name:", bold_style), Paragraph(commodity["name"], normal_style)],
-        [Paragraph("Category:", bold_style), Paragraph(commodity["category"], normal_style)],
-        [Paragraph("Respiration Profile:", bold_style), Paragraph(commodity["respiration_rate"], normal_style)],
-        [Paragraph("Ethylene Sensitivity:", bold_style), Paragraph(commodity["ethylene_sensitivity"], normal_style)],
-        [Paragraph("Optimal Storage:", bold_style), Paragraph(f"{commodity['optimal_temp_c']}°C at {commodity['optimal_rh_pct']}% RH", normal_style)],
-        [Paragraph("Critical Spoilage Vectors:", bold_style), Paragraph(", ".join(commodity["spoilage_factors"]), normal_style)]
+        [Paragraph("Commodity Name:", bold_style), Paragraph(commodity.get("name", "Custom Commodity"), normal_style)],
+        [Paragraph("Food Category / Sector:", bold_style), Paragraph(commodity.get("category", "General Food"), normal_style)],
+        [Paragraph("FSSAI Classification:", bold_style), Paragraph(food_type_badge, normal_style)],
+        [Paragraph("Respiration Profile:", bold_style), Paragraph(str(commodity.get("respiration_rate", "Standard")), normal_style)],
+        [Paragraph("Ethylene Sensitivity:", bold_style), Paragraph(str(commodity.get("ethylene_sensitivity", "Low/None")), normal_style)],
+        [Paragraph("Optimal Storage:", bold_style), Paragraph(f"{commodity.get('optimal_temp_c', 10.0)}°C at {commodity.get('optimal_rh_pct', 75.0)}% RH", normal_style)],
+        [Paragraph("Critical Spoilage Vectors:", bold_style), Paragraph(spoilage_str, normal_style)]
     ]
     t1 = Table(comm_data, colWidths=[150, 390])
     t1.setStyle(TableStyle([
@@ -106,7 +121,7 @@ def generate_pdf_report(
         [Paragraph("Tensile Strength:", bold_style), Paragraph(f"{mat['tensile_strength_mpa']} MPa", normal_style)],
         [Paragraph("Economic Cost / m²:", bold_style), Paragraph(f"₹{mat['cost_per_sqm_inr']} INR", normal_style)],
         [Paragraph("Biodegradability & EPR Status:", bold_style), Paragraph(
-            f"{'Compostable in ' + str(mat['compostability_days']) + ' days' if mat['biodegradable'] else 'Non-biodegradable (EPR compliant)'}", normal_style)]
+            f"{'Compostable in ' + str(mat['compostability_days']) + ' days' if mat['biodegradable'] else 'Non-biodegradable (EPR compliant / Recyclable)'}", normal_style)]
     ]
     t2 = Table(mat_data, colWidths=[150, 390])
     t2.setStyle(TableStyle([
@@ -130,7 +145,7 @@ def generate_pdf_report(
         ],
         [
             Paragraph(f"<b>CO2 Reduction vs Plastic:</b><br/>{lca_data['co2_reduction_pct']}%", normal_style),
-            Paragraph(f"<b>CO2 Saved (10k units):</b><br/>{lca_data['co2_saved_kg']} kg CO2", normal_style),
+            Paragraph(f"<b>CO2 Saved (Batch):</b><br/>{lca_data['co2_saved_kg']} kg CO2", normal_style),
             Paragraph(f"<b>MoFPI Rating:</b><br/>{lca_data['eco_tier'].split('(')[0]}", normal_style)
         ]
     ]

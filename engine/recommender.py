@@ -1,7 +1,7 @@
 import json
 import math
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -35,20 +35,28 @@ def compute_barrier_score(mat_val: float, target_range: List[float]) -> float:
     return min(1.0, max(0.0, score))
 
 def recommend_packaging(
-    commodity_id: str,
+    commodity: Union[str, Dict[str, Any]],
     priority_mode: str = "Balanced",
     target_shelf_life_days: int = 14,
     storage_temp_c: float = 15.0,
     storage_rh_pct: float = 75.0,
-    custom_weights: Dict[str, float] = None
+    custom_weights: Dict[str, float] = None,
+    commodity_id: str = None
 ) -> Dict[str, Any]:
     """
     Core AI & MCDM Recommendation algorithm.
+    Accepts either commodity dictionary or commodity ID string.
     """
     commodities, materials, features = load_data()
-    commodity = next((c for c in commodities if c["id"] == commodity_id), None)
-    if not commodity:
-        raise ValueError(f"Commodity ID '{commodity_id}' not found.")
+    
+    # Resolve commodity
+    if isinstance(commodity, dict):
+        current_commodity = commodity
+    else:
+        target_id = commodity or commodity_id
+        current_commodity = next((c for c in commodities if c["id"] == target_id), None)
+        if not current_commodity:
+            raise ValueError(f"Commodity ID '{target_id}' not found.")
 
     # Preset weights: [Barrier, Eco/LCA, Cost, Mechanical]
     weights_map = {
@@ -60,9 +68,22 @@ def recommend_packaging(
     
     weights = custom_weights or weights_map.get(priority_mode, weights_map["Balanced"])
     
-    target_otr = commodity["target_otr_range"]
-    target_wvtr = commodity["target_wvtr_range"]
-    is_respiring = "Fruits" in commodity["category"]
+    # Normalize custom weights to sum to 1.0 if needed
+    weight_sum = sum(weights.values())
+    if weight_sum > 0 and abs(weight_sum - 1.0) > 1e-3:
+        weights = {k: v / weight_sum for k, v in weights.items()}
+    
+    target_otr = current_commodity.get("target_otr_range", [10, 100])
+    target_wvtr = current_commodity.get("target_wvtr_range", [2, 10])
+    
+    cat_lower = current_commodity.get("category", "").lower()
+    resp_rate_lower = current_commodity.get("respiration_rate", "").lower()
+    is_respiring = (
+        "fruit" in cat_lower or 
+        "vegetable" in cat_lower or 
+        "produce" in cat_lower or 
+        ("moderate" in resp_rate_lower or "high" in resp_rate_lower) and "zero" not in resp_rate_lower and "non-respiring" not in resp_rate_lower
+    )
 
     scored_materials = []
     
@@ -105,7 +126,9 @@ def recommend_packaging(
         ) * 100
 
         # Category affinity bonus
-        if commodity["category"] in mat["best_suited_for"]:
+        best_suited = [s.lower() for s in mat.get("best_suited_for", [])]
+        comm_name_lower = current_commodity.get("name", "").lower()
+        if any(b in cat_lower or cat_lower in b or b in comm_name_lower for b in best_suited):
             total_score = min(100.0, total_score * 1.05)
 
         scored_materials.append({
@@ -125,11 +148,14 @@ def recommend_packaging(
     # Relevant intelligent features matching commodity category
     matched_features = [
         f for f in features
-        if commodity["category"] in f["applicable_categories"]
+        if any(cat.lower() in cat_lower or cat_lower in cat.lower() for cat in f["applicable_categories"])
     ]
+    if not matched_features:
+        # Generic fallback active & intelligent features
+        matched_features = [features[1], features[2], features[5]]
 
     return {
-        "commodity": commodity,
+        "commodity": current_commodity,
         "priority_mode": priority_mode,
         "weights": weights,
         "recommendations": scored_materials,

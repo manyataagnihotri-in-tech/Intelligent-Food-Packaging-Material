@@ -6,7 +6,7 @@
     "target_hazard": "Volatile Basic Nitrogen (TVB-N) & pH shift",
     "mechanism": "Red cabbage / black carrot anthocyanin immobilized in bacterial cellulose changing from red/purple (fresh) to green/yellow (spoiled).",
     "estimated_cost_inr": 0.85,
-    "applicable_categories": ["Meat & Poultry", "Fish & Seafood", "Dairy Products"]
+    "applicable_categories": ["Meat & Poultry", "Fish & Seafood", "Dairy Products", "Processed Meats", "Ready-to-Eat (Non-Veg)"]
   },
   {
     "id": "enzymatic_tti",
@@ -15,7 +15,7 @@
     "target_hazard": "Cumulative Cold Chain Thermal Abuse",
     "mechanism": "Lipase-driven lipid hydrolysis causing progressive color shift matching product spoilage activation energy (Ea).",
     "estimated_cost_inr": 1.50,
-    "applicable_categories": ["Dairy Products", "Meat & Poultry", "Fish & Seafood", "Fruits & Vegetables"]
+    "applicable_categories": ["Dairy Products", "Meat & Poultry", "Fish & Seafood", "Fruits & Vegetables", "Eggs & Egg Products", "Processed Meats"]
   },
   {
     "id": "iron_o2_scavenger",
@@ -24,13 +24,13 @@
     "target_hazard": "Residual and Permeating Headspace Oxygen (< 0.1% O2)",
     "mechanism": "Ferrous iron oxidation irreversibly binds O2, stopping oxidative rancidity and mold growth.",
     "estimated_cost_inr": 0.60,
-    "applicable_categories": ["Snacks & Fried Foods", "Bakery & Confectionery", "Dairy Products", "Grains & Pulses"]
+    "applicable_categories": ["Snacks & Fried Foods", "Bakery & Confectionery", "Dairy Products", "Grains & Pulses", "Spices & Condiments"]
   },
   {
     "id": "kmno4_ethylene_absorber",
     "name": "Zeolite / KMnO4 Potassium Permanganate Ethylene Scavenger",
     "type": "Active (Scavenging)",
-    "target_hazard": "Endogenous Ethylene Gas (C2H4) Accellerating Senescence",
+    "target_hazard": "Endogenous Ethylene Gas (C2H4) Accelerating Senescence",
     "mechanism": "Oxidizes C2H4 into CO2 and H2O across microporous zeolite mineral matrices.",
     "estimated_cost_inr": 0.75,
     "applicable_categories": ["Fruits & Vegetables"]
@@ -42,7 +42,7 @@
     "target_hazard": "Bacterial drip exudate proliferation (Pseudomonas, Listeria)",
     "mechanism": "Release of non-toxic metal ions disrupting microbial cell membranes while absorbing free purging fluids.",
     "estimated_cost_inr": 1.20,
-    "applicable_categories": ["Meat & Poultry", "Fish & Seafood"]
+    "applicable_categories": ["Meat & Poultry", "Fish & Seafood", "Processed Meats"]
   },
   {
     "id": "nfc_rfid_traceability",
@@ -51,6 +51,6 @@
     "target_hazard": "Counterfeiting, Cold Chain Opacity, Farm-to-Fork Traceability",
     "mechanism": "Encrypted digital product passport linked to FSSAI batch registration and logistics sensor records.",
     "estimated_cost_inr": 1.80,
-    "applicable_categories": ["Fruits & Vegetables", "Dairy Products", "Meat & Poultry", "Ready-to-Eat (RTE)", "Grains & Pulses"]
+    "applicable_categories": ["Fruits & Vegetables", "Dairy Products", "Meat & Poultry", "Ready-to-Eat (RTE)", "Ready-to-Eat (Veg)", "Ready-to-Eat (Non-Veg)", "Grains & Pulses", "Fish & Seafood", "Eggs & Egg Products", "Spices & Condiments"]
   }
 ]
